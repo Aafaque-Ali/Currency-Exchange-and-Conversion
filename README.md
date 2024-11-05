@@ -7,14 +7,12 @@ This is an independent microservice.
 
 ### Step 01] Setting up currency-exchange-service
 #### Dependencies used in pom.xml
-<ol>
-<li>spring-boot-starter-web</li>
-<li>spring-boot-devtools</li>
-<li>spring-boot-starter-actuator</li>
-<li>spring-cloud-starter-config</li>
-<br>	This enables us to talk to spring-cloud-config-server
-<li> lombok</li>
-</ol>
+	1) spring-boot-starter-web
+	2) spring-boot-devtools
+	3) spring-boot-starter-actuator
+	4) spring-cloud-starter-config
+		This enables us to talk to spring-cloud-config-server
+	5) lombok
 	
 #### application.properties
 ```java
@@ -103,10 +101,9 @@ http://localhost:8001/currency-exchange/from/USD/to/INR
 ### Step 05] Connecting to H2 Database
 #### pom.xml
 add new dependency
-<ol start="6" type="1">
-<li>spring-boot-starter-data-jpa</li>
-<li>h2</li>
-</ol>
+	
+ 	6) spring-boot-starter-data-jpa
+	7) h2
 	
 #### application.properties
 ```java
@@ -207,15 +204,13 @@ This microservice is dependent on above currency-exchange-service.
 
 ### Step 01] Setting up currency-conversion-service
 #### Dependencies used in pom.xml
-<ol type="1">
-<li>spring-boot-starter-web</li>
-<li>spring-boot-devtools</li>
-<li>spring-boot-starter-actuator</li>
-<li>spring-cloud-starter-config</li>
-	This enables us to talk to spring-cloud-config-server
-<li>lombok</li>
-</ol>
-	
+	1) spring-boot-starter-web
+	2) spring-boot-devtools
+	3) spring-boot-starter-actuator
+	4) spring-cloud-starter-config
+		This enables us to talk to spring-cloud-config-server
+	5) lombok
+
 #### application.properties
 ```java
 spring.application.name=currency-conversion
