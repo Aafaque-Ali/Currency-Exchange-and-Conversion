@@ -496,39 +496,17 @@ public interface CurrencyExchangeProxy {
 	
 }
 ```
-
 <hr><hr>
-To implement a common feature across multiple microservices use API Gateway.
+
+## 04 api-gateway
+<p>To implement a common feature across multiple microservices use API Gateway.
 Instead of implementing these features in each microservice we implement it in a single microservice through which all calls are passed.
 
 <b><u>API Gateway</u></b>
 Before calling any microservice we can route the request through an API Gateway. 
 In simple terms, we prefer a component between client and server to manage all API requests called API Gateway. 
 It's features include:
-
-<ol>
-<li>Security — Authentication, authorization</li>
-<li>Routing — routing, request/response manipulation, circuit breaker</li>
-<li>Observability — metric aggregation, logging, tracing</li>
-</ol>
-
-Architectural benefits of API Gateway:
-<ol>
-<li>Reduced complexity</li>
-<li>Centralized control of policies</li>
-<li>Simplified troubleshooting</li>
-</ol>
-<hr><hr>
-
-## api-gateway
-To implement a common feature across multiple microservices use API Gateway.
-Instead of implementing these features in each microservice we implement it in a single microservice through which all calls are passed.
-
-<b><u>API Gateway</u></b>
-Before calling any microservice we can route the request through an API Gateway. 
-In simple terms, we prefer a component between client and server to manage all API requests called API Gateway. 
-It's features include:
-
+</p>
 <ol>
 <li>Security — Authentication, authorization</li>
 <li>Routing — routing, request/response manipulation, circuit breaker</li>
@@ -543,9 +521,8 @@ Architectural benefits of API Gateway:
 </ol>
 
 There are many types of implementations available for API Gateway which include — Spring Cloud Gateway, Zuul API Gateway, APIGee, EAG (Enterprise API Gateway)
+<br>
 We are using Spring Cloud Gateway.
-
-
 
 ### Step 01] Setting up api-gateway
 #### pom.xml
@@ -558,18 +535,18 @@ add following dependencies
 	5) spring-cloud-starter-config
 
 #### application.properties
+```java
+spring.application.name=api-gateway
+server.port=8765
 
-	spring.application.name=api-gateway
-	server.port=8765
-
-	#we need to define config server port because of <spring-cloud-starter-config> dependency
-	spring.config.import=optional:configserver:http://localhost:8888
+#we need to define config server port because of <spring-cloud-starter-config> dependency
+spring.config.import=optional:configserver:http://localhost:8888
 	
-	eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 	
-	spring.cloud.gateway.discovery.locator.enabled=true
-	spring.cloud.gateway.discovery.locator.lower-case-service-id=true
-	
+spring.cloud.gateway.discovery.locator.enabled=true
+spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+```	
 
 REST Endpoints:
 
@@ -585,20 +562,21 @@ REST Endpoints:
 ### Step 02] Define Custom Routes
 To define custom routes disable discovery locator in appplication.properties
 #### application.properties
+```java
+spring.application.name=api-gateway
+server.port=8765
 
-	spring.application.name=api-gateway
-	server.port=8765
-
-	#we need to define config server port because of <spring-cloud-starter-config> dependency
-	spring.config.import=optional:configserver:http://localhost:8888
+#we need to define config server port because of <spring-cloud-starter-config> dependency
+spring.config.import=optional:configserver:http://localhost:8888
 	
-	eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 	
-	#spring.cloud.gateway.discovery.locator.enabled=true
-	#spring.cloud.gateway.discovery.locator.lower-case-service-id=true
-
+#spring.cloud.gateway.discovery.locator.enabled=true
+#spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+```
 
 #### ApiGatewayConfiguration.java
+```java
 package com.in28minutes.microservices.api_gateway;
 
 import org.springframework.cloud.gateway.route.RouteLocator;
@@ -629,9 +607,11 @@ public class ApiGatewayConfiguration {
 				.build();
 	}
 }
+```
 
 ### Step 03] Implementing Global Logging Filter
 #### LoggingFilter.java
+```java
 package com.in28minutes.microservices.api_gateway.filter;
 
 import org.slf4j.Logger;
@@ -656,7 +636,7 @@ public class LoggingFilter implements GlobalFilter {
 	}
 
 }
-
+```
 <hr>
 
 ### Step 04] @Retry Returning a fallback response if service is down
@@ -673,6 +653,7 @@ public class LoggingFilter implements GlobalFilter {
 
 
 #### CircuitBreakerController.java
+```java
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -709,8 +690,10 @@ public class CircuitBreakerController {
 	}
 	
 }
+```
 
 #### application.properties
+```java
 spring.application.name=api-gateway
 server.port=8765
 
@@ -724,14 +707,14 @@ eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 resilience4j.retry.instances.sample-api.max-attempts=5
 resilience4j.retry.instances.sample-api.wait-duration=1s
 resilience4j.retry.instances.sample-api.enable-exponential-backoff=true
-
+```
 
 ### Step 05] Implementing Circuit Breaker
 We implement circuit breaker pattern to reduce load. Instead of hitting a down/slow microservice and increasing load we implement circuit breaker which will attempt to connect few times and then will stop, and might wait and retry or directly declare fallback response without hitting microservice.
 
 #### CircuitBreakerController.java
 Replace @Retry with @CircuitBreaker in sampleApi()
-
+```java
 	@GetMapping("/sample-api")
 	@CircuitBreaker(name = "sample-api", fallbackMethod = "hardcodedResponse")
 	public String sampleApi() {
@@ -745,7 +728,7 @@ Replace @Retry with @CircuitBreaker in sampleApi()
 	public String hardcodedResponse(Exception ex) {
 		return "fallback-response";
 	}
-
+```
 
 There is not equivalent watch command in Windows. All we can do is to run the following command on Window's command prompt:
 
@@ -759,7 +742,7 @@ The output will be:
 
 ### Step 06] Implementing Rate Limiting
 add @RateLimiter annotation to workingApi()
-
+```java
 //	Working api
 	@GetMapping("/working-api")
 	@CircuitBreaker(name = "default", fallbackMethod = "hardcodedResponse")
@@ -768,14 +751,15 @@ add @RateLimiter annotation to workingApi()
 		logger.info("Working Api call received");
 		return "working-API";
 	}
+```
 	
 #### application.properties
 add following lines: 
-
-	resilience4j.circuitbreaker.instances.sample-api.failure-rate-threshold=90
-	resilience4j.ratelimiter.instances.default.limit-for-period=2
-	resilience4j.ratelimiter.instances.default.limit-refresh-period=10s
-
+```java
+resilience4j.circuitbreaker.instances.sample-api.failure-rate-threshold=90
+resilience4j.ratelimiter.instances.default.limit-for-period=2
+resilience4j.ratelimiter.instances.default.limit-refresh-period=10s
+```
 Run in cmd
 
 	for /l %g in () do @(curl http://localhost:8765/working-api & timeout /t 0)
@@ -783,7 +767,7 @@ Run in cmd
 
 ### Step 06] Implementing BulkHead Features
 Replace @RateLimiter annotation with @BulkHead in workingApi()
-
+```java
 //	Working api
 	@GetMapping("/working-api")
 	@CircuitBreaker(name = "default", fallbackMethod = "hardcodedResponse")
@@ -793,6 +777,7 @@ Replace @RateLimiter annotation with @BulkHead in workingApi()
 		logger.info("Working Api call received");
 		return "working-API";
 	}
+```
 	
 #### application.properties
 add following line:
